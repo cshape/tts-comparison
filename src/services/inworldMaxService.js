@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getInworldAgent } from '../utils/inworldHttpAgent.js';
 
 /**
  * Inworld TTS Max Service
@@ -112,6 +113,7 @@ class InworldMaxService {
                 'Authorization': authHeader,
                 'Content-Type': 'application/json'
             },
+            httpsAgent: getInworldAgent(),
             responseType: 'stream',
             validateStatus: () => true
         });

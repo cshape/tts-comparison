@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getInworldAgent } from '../utils/inworldHttpAgent.js';
 
 /**
  * Inworld TTS Service
@@ -112,6 +113,7 @@ class InworldService {
                 'Authorization': authHeader,
                 'Content-Type': 'application/json'
             },
+            httpsAgent: getInworldAgent(),
             responseType: 'stream',
             validateStatus: () => true // Handle errors manually for streaming
         });

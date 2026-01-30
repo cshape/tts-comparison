@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 // Import graph manager and audio manager for serving audio files
 import { graphManager } from '../managers/graphManager.js';
 import AudioManager from '../managers/audioManager.js';
+import { warmupInworldConnection } from '../utils/inworldHttpAgent.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -121,11 +122,17 @@ router.get('/api/audio/:sessionId/:model', (req, res) => {
   // Health check endpoint
   router.get('/health', (req, res) => {
     const graphStatus = graphManager.getStatus();
-    res.json({ 
-      status: 'ok', 
+    res.json({
+      status: 'ok',
       timestamp: new Date().toISOString(),
       graph: graphStatus
     });
+  });
+
+  // Warmup endpoint for Inworld connection (pre-establishes TCP+TLS)
+  router.post('/api/warmup/inworld', async (req, res) => {
+    const result = await warmupInworldConnection();
+    res.json(result);
   });
 
   return router;

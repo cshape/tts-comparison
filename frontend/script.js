@@ -125,6 +125,12 @@ window.addEventListener('load', () => {
     connectSSE(currentSessionId);
     updateStatus('Ready to generate speech', 'info');
     initializeTooltips();
+
+    // Warm up Inworld connection (pre-establishes TCP+TLS for faster first request)
+    fetch('/api/warmup/inworld', { method: 'POST' })
+        .then(r => r.json())
+        .then(result => console.log('[Warmup] Inworld:', result))
+        .catch(err => console.warn('[Warmup] Inworld failed:', err));
 });
 
 // Cleanup on unload
