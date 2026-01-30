@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 import SessionManager from './src/managers/sessionManager.js';
 import { graphManager } from './src/managers/graphManager.js';
 import createTTSRoutes from './src/routes/ttsRoutes.js';
-import { destroyInworldAgent } from './src/utils/inworldHttpAgent.js';
+import { destroyAllAgents } from './src/utils/httpAgents.js';
 
 // Create session manager instance
 const sessionManager = new SessionManager();
@@ -55,8 +55,8 @@ async function gracefulShutdown(signal) {
     console.error('Error shutting down graph manager:', error);
   }
 
-  // Clean up Inworld HTTPS agent
-  destroyInworldAgent();
+  // Clean up all HTTPS agents
+  destroyAllAgents();
 
   server.close(() => {
     console.log('Server closed');

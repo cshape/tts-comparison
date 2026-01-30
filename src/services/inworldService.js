@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getInworldAgent } from '../utils/inworldHttpAgent.js';
+import { getInworldAgent } from '../utils/httpAgents.js';
 
 /**
  * Inworld TTS Service

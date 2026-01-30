@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getHumeAgent } from '../utils/httpAgents.js';
 
 /**
  * Hume TTS Service
@@ -113,6 +114,7 @@ class HumeService {
                 'X-Hume-Api-Key': process.env.HUME_API_KEY,
                 'Content-Type': 'application/json'
             },
+            httpsAgent: getHumeAgent(),
             responseType: 'stream',
             validateStatus: () => true // Handle errors manually for streaming
         });

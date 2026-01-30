@@ -126,11 +126,20 @@ window.addEventListener('load', () => {
     updateStatus('Ready to generate speech', 'info');
     initializeTooltips();
 
-    // Warm up Inworld connection (pre-establishes TCP+TLS for faster first request)
-    fetch('/api/warmup/inworld', { method: 'POST' })
+    // Warm up all TTS provider connections (pre-establishes TCP+TLS for faster first requests)
+    fetch('/api/warmup/all', { method: 'POST' })
         .then(r => r.json())
-        .then(result => console.log('[Warmup] Inworld:', result))
-        .catch(err => console.warn('[Warmup] Inworld failed:', err));
+        .then(result => {
+            console.log(`[Warmup] All providers warmed up in ${result.totalTimeMs}ms`);
+            result.results.forEach(r => {
+                if (r.success) {
+                    console.log(`[Warmup] ${r.provider}: ${r.warmupTimeMs}ms`);
+                } else {
+                    console.log(`[Warmup] ${r.provider}: skipped - ${r.error}`);
+                }
+            });
+        })
+        .catch(err => console.warn('[Warmup] Failed:', err));
 });
 
 // Cleanup on unload

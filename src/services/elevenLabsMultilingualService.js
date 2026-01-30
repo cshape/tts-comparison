@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getElevenLabsAgent } from '../utils/httpAgents.js';
 
 /**
  * ElevenLabs Multilingual TTS Service
@@ -115,6 +116,7 @@ class ElevenLabsMultilingualService {
                 output_format: 'mp3_44100_128',
                 optimize_streaming_latency: 3
             },
+            httpsAgent: getElevenLabsAgent(),
             responseType: 'stream',
             validateStatus: () => true
         });

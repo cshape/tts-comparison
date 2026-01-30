@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getCartesiaAgent } from '../utils/httpAgents.js';
 
 /**
  * Cartesia TTS Service
@@ -111,6 +112,7 @@ class CartesiaService {
                 'X-API-Key': process.env.CARTESIA_API_KEY,
                 'Content-Type': 'application/json'
             },
+            httpsAgent: getCartesiaAgent(),
             responseType: 'stream',
             validateStatus: () => true
         });

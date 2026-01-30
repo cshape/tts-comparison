@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 // Import graph manager and audio manager for serving audio files
 import { graphManager } from '../managers/graphManager.js';
 import AudioManager from '../managers/audioManager.js';
-import { warmupInworldConnection } from '../utils/inworldHttpAgent.js';
+import { warmupAllConnections, warmupInworldConnection, warmupCartesiaConnection, warmupElevenLabsConnection, warmupHumeConnection } from '../utils/httpAgents.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -129,9 +129,29 @@ router.get('/api/audio/:sessionId/:model', (req, res) => {
     });
   });
 
-  // Warmup endpoint for Inworld connection (pre-establishes TCP+TLS)
+  // Warmup endpoints for TTS provider connections (pre-establishes TCP+TLS)
+  router.post('/api/warmup/all', async (req, res) => {
+    const result = await warmupAllConnections();
+    res.json(result);
+  });
+
   router.post('/api/warmup/inworld', async (req, res) => {
     const result = await warmupInworldConnection();
+    res.json(result);
+  });
+
+  router.post('/api/warmup/cartesia', async (req, res) => {
+    const result = await warmupCartesiaConnection();
+    res.json(result);
+  });
+
+  router.post('/api/warmup/elevenlabs', async (req, res) => {
+    const result = await warmupElevenLabsConnection();
+    res.json(result);
+  });
+
+  router.post('/api/warmup/hume', async (req, res) => {
+    const result = await warmupHumeConnection();
     res.json(result);
   });
 
