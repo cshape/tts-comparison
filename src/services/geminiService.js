@@ -116,12 +116,19 @@ class GeminiService {
 
         const turn = deferred();
 
+        // Live API is conversational by default — without a system instruction it
+        // will respond TO the text rather than reading it aloud.
+        const ttsSystemInstruction = "You are a text-to-speech engine. Read the user's next message aloud, exactly as written. Do not greet, comment, summarize, paraphrase, translate, or add anything. Output only the spoken audio of the text — no preamble, no closing.";
+
         const session = await ai.live.connect({
             model: modelId,
             config: {
                 responseModalities: [Modality.AUDIO],
                 speechConfig: {
                     voiceConfig: { prebuiltVoiceConfig: { voiceName } }
+                },
+                systemInstruction: {
+                    parts: [{ text: ttsSystemInstruction }]
                 }
             },
             callbacks: {
