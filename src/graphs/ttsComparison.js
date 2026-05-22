@@ -13,6 +13,8 @@ import ElevenLabsMultilingualService from '../services/elevenLabsMultilingualSer
 import HumeService from '../services/humeService.js';
 import InworldService from '../services/inworldService.js';
 import InworldMaxService from '../services/inworldMaxService.js';
+import InworldTts2Service from '../services/inworldTts2Service.js';
+import GeminiService from '../services/geminiService.js';
 import AudioManager from '../managers/audioManager.js';
 import vadService from '../services/vadService.js';
 
@@ -144,7 +146,9 @@ class BaseTTSProviderNode extends CustomNode {
       'ElevenLabs Multilingual': 'elevenlabs-multilingual',
       'Hume': 'hume',
       'Inworld': 'inworld',
-      'Inworld Max': 'inworldmax'
+      'Inworld Max': 'inworldmax',
+      'Inworld TTS-2': 'inworldtts2',
+      'Gemini': 'gemini'
     };
     return keyMap[this.providerName] || this.providerName.toLowerCase();
   }
@@ -227,6 +231,26 @@ class InworldMaxTTSNode extends BaseTTSProviderNode {
   }
 }
 
+class InworldTts2TTSNode extends BaseTTSProviderNode {
+  constructor(config, sharedAudioManager, sessionManager) {
+    super(config, 'Inworld TTS-2', InworldTts2Service, 'inworld-tts-2', sharedAudioManager, sessionManager);
+  }
+
+  getVoiceUsed() {
+    return process.env.INWORLD_TTS2_VOICE_ID || 'Jason';
+  }
+}
+
+class GeminiTTSNode extends BaseTTSProviderNode {
+  constructor(config, sharedAudioManager, sessionManager) {
+    super(config, 'Gemini', GeminiService, 'gemini-3.1-flash-tts-preview', sharedAudioManager, sessionManager);
+  }
+
+  getVoiceUsed() {
+    return process.env.GEMINI_VOICE_ID || 'Charon';
+  }
+}
+
 // Ranking and results aggregation node
 class TTSRankingNode extends CustomNode {
   constructor(config, sessionManager) {
@@ -234,23 +258,27 @@ class TTSRankingNode extends CustomNode {
     this.sessionManager = sessionManager;
   }
 
-  async process(context, cartesiaResult, elevenLabsMultilingualResult, humeResult, inworldResult, inworldMaxResult) {
+  async process(context, cartesiaResult, elevenLabsMultilingualResult, humeResult, inworldResult, inworldMaxResult, inworldTts2Result, geminiResult) {
     console.log('[TTSRanking] Aggregating results from all providers');
     console.log('[TTSRanking] Received results:', {
       cartesia: cartesiaResult?.provider,
       elevenLabsMultilingual: elevenLabsMultilingualResult?.provider,
       hume: humeResult?.provider,
       inworld: inworldResult?.provider,
-      inworldMax: inworldMaxResult?.provider
+      inworldMax: inworldMaxResult?.provider,
+      inworldTts2: inworldTts2Result?.provider,
+      gemini: geminiResult?.provider
     });
-    
+
     // Collect all results into an array
     const allResults = [
       cartesiaResult,
       elevenLabsMultilingualResult,
       humeResult,
       inworldResult,
-      inworldMaxResult
+      inworldMaxResult,
+      inworldTts2Result,
+      geminiResult
     ];
     
     // Filter out null/undefined results, errors, and results with 99999ms latency (skipped due to missing API keys)
@@ -325,7 +353,9 @@ class TTSRankingNode extends CustomNode {
       'ElevenLabs Multilingual': 'elevenlabs-multilingual',
       'Hume': 'hume',
       'Inworld': 'inworld',
-      'Inworld Max': 'inworldmax'
+      'Inworld Max': 'inworldmax',
+      'Inworld TTS-2': 'inworldtts2',
+      'Gemini': 'gemini'
     };
     return providerMap[providerName] || providerName.toLowerCase();
   }
@@ -352,7 +382,9 @@ export function createTTSComparisonGraph(sessionManager) {
   const humeTTS = new HumeTTSNode({ id: "hume-tts" }, sharedAudioManager, sessionManager);
   const inworldTTS = new InworldTTSNode({ id: "inworld-tts" }, sharedAudioManager, sessionManager);
   const inworldMaxTTS = new InworldMaxTTSNode({ id: "inworld-max-tts" }, sharedAudioManager, sessionManager);
-  
+  const inworldTts2TTS = new InworldTts2TTSNode({ id: "inworld-tts2-tts" }, sharedAudioManager, sessionManager);
+  const geminiTTS = new GeminiTTSNode({ id: "gemini-tts" }, sharedAudioManager, sessionManager);
+
   const ttsRanking = new TTSRankingNode({ id: "tts-ranking" }, sessionManager);
 
   const graph = new GraphBuilder({ id: 'tts-comparison', apiKey })
@@ -366,6 +398,8 @@ export function createTTSComparisonGraph(sessionManager) {
     .addNode(humeTTS)
     .addNode(inworldTTS)
     .addNode(inworldMaxTTS)
+    .addNode(inworldTts2TTS)
+    .addNode(geminiTTS)
     .addNode(ttsRanking)
     .setStartNode(textInputProxy)
     // Connect proxy to all TTS providers
@@ -378,6 +412,8 @@ export function createTTSComparisonGraph(sessionManager) {
     .addEdge(textInputProxy, humeTTS)
     .addEdge(textInputProxy, inworldTTS)
     .addEdge(textInputProxy, inworldMaxTTS)
+    .addEdge(textInputProxy, inworldTts2TTS)
+    .addEdge(textInputProxy, geminiTTS)
     // Connect all TTS providers to ranking node
     .addEdge(cartesiaTTS, ttsRanking)
     // COMMENTED OUT: ElevenLabs Turbo
@@ -388,6 +424,8 @@ export function createTTSComparisonGraph(sessionManager) {
     .addEdge(humeTTS, ttsRanking)
     .addEdge(inworldTTS, ttsRanking)
     .addEdge(inworldMaxTTS, ttsRanking)
+    .addEdge(inworldTts2TTS, ttsRanking)
+    .addEdge(geminiTTS, ttsRanking)
     .setEndNode(ttsRanking)
     .build();
 

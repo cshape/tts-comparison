@@ -9,6 +9,8 @@ export const elevenLabsMultilingualPlayBtn = document.getElementById('elevenlabs
 // export const elevenLabsFlashPlayBtn = document.getElementById('elevenlabs-flash-play-btn');
 export const inworldPlayBtn = document.getElementById('inworld-play-btn');
 export const inworldMaxPlayBtn = document.getElementById('inworldmax-play-btn');
+export const inworldTts2PlayBtn = document.getElementById('inworldtts2-play-btn');
+export const geminiPlayBtn = document.getElementById('gemini-play-btn');
 export const humePlayBtn = document.getElementById('hume-play-btn');
 export const cartesiaPlayBtn = document.getElementById('cartesia-play-btn');
 export const loadingSection = document.getElementById('loadingSection');
@@ -61,6 +63,26 @@ export const models = {
         section: document.getElementById('inworldmax-section'),
         timeline: document.getElementById('inworldmax-timeline'),
         stats: document.getElementById('inworldmax-stats'),
+        segments: {},
+        markers: {},
+        startTime: null,
+        speechStartTime: null,
+        completionTime: null
+    },
+    inworldtts2: {
+        section: document.getElementById('inworldtts2-section'),
+        timeline: document.getElementById('inworldtts2-timeline'),
+        stats: document.getElementById('inworldtts2-stats'),
+        segments: {},
+        markers: {},
+        startTime: null,
+        speechStartTime: null,
+        completionTime: null
+    },
+    gemini: {
+        section: document.getElementById('gemini-section'),
+        timeline: document.getElementById('gemini-timeline'),
+        stats: document.getElementById('gemini-stats'),
         segments: {},
         markers: {},
         startTime: null,

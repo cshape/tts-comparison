@@ -28,6 +28,14 @@ class AudioManager {
     }
 
     /**
+     * Get the on-disk file extension for a model's audio.
+     * Gemini returns PCM that we wrap as WAV; all other providers stream MP3.
+     */
+    getExtensionForModel(model) {
+        return model === 'gemini' ? 'wav' : 'mp3';
+    }
+
+    /**
      * Store audio data in memory
      * @param {string} sessionId - The session ID
      * @param {string} model - The model name (elevenlabs, inworld, hume)
@@ -76,9 +84,10 @@ class AudioManager {
      * @param {string} suffix - Optional suffix for filename
      */
     saveChunkToDisk(sessionId, model, chunk, chunkNumber, suffix = '') {
-        const filename = suffix 
-            ? `${sessionId}_${model}_${suffix}.mp3`
-            : `${sessionId}_${model}_chunk_${chunkNumber}.mp3`;
+        const ext = this.getExtensionForModel(model);
+        const filename = suffix
+            ? `${sessionId}_${model}_${suffix}.${ext}`
+            : `${sessionId}_${model}_chunk_${chunkNumber}.${ext}`;
         const filePath = path.join(this.audioDir, filename);
         
         try {
@@ -147,7 +156,8 @@ class AudioManager {
      * @returns {string|null} File path of saved audio or null if failed
      */
     saveCompleteAudio(sessionId, model, audioBuffer) {
-        const filename = `${sessionId}_${model}_complete.mp3`;
+        const ext = this.getExtensionForModel(model);
+        const filename = `${sessionId}_${model}_complete.${ext}`;
         const filePath = path.join(this.audioDir, filename);
         
         try {
@@ -168,7 +178,8 @@ class AudioManager {
      * @returns {Promise<number|null>} Duration in milliseconds or null if failed
      */
     async getAudioDuration(sessionId, model, suffix = 'first_chunk') {
-        const filename = `${sessionId}_${model}_${suffix}.mp3`;
+        const ext = this.getExtensionForModel(model);
+        const filename = `${sessionId}_${model}_${suffix}.${ext}`;
         const filePath = path.join(this.audioDir, filename);
         
         try {
@@ -198,9 +209,10 @@ class AudioManager {
             return true; // Return true to indicate "success" without actually deleting
         }
         
+        const ext = this.getExtensionForModel(model);
         const filesToDelete = [
-            `${sessionId}_${model}_complete.mp3`,
-            `${sessionId}_${model}_first_chunk.mp3`
+            `${sessionId}_${model}_complete.${ext}`,
+            `${sessionId}_${model}_first_chunk.${ext}`
         ];
         
         let deletedCount = 0;

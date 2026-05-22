@@ -178,6 +178,66 @@
                 </div>
             </div>
 
+            <!-- Inworld TTS-2 Model Section -->
+            <div class="model-section hidden" id="inworldtts2-section" data-model="inworldtts2">
+                <div class="model-header">
+                    <div class="model-info">
+                        <h3>Inworld</h3>
+                        <span class="model-badge premium">inworld-tts-2</span>
+                    </div>
+                    <div class="model-controls">
+                        <button id="inworldtts2-play-btn" class="play-btn" disabled>
+                            Play Audio
+                        </button>
+                        <div class="model-stats" id="inworldtts2-stats">
+                            <span class="stat-item">Time to First Real Audio: <span class="stat-value">--</span></span>
+                            <span class="stat-item">Time to First Byte: <span class="stat-value">--</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-container">
+                    <div class="timeline" id="inworldtts2-timeline">
+                        <div class="timeline-bar">
+                            <div class="timeline-segment processing" style="width: 0%"></div>
+                            <div class="timeline-segment silent-prefix" style="width: 0%"></div>
+                            <div class="timeline-segment speech" style="width: 0%"></div>
+                            <div class="timeline-segment vad-silence" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gemini Model Section -->
+            <div class="model-section hidden" id="gemini-section" data-model="gemini">
+                <div class="model-header">
+                    <div class="model-info">
+                        <h3>Gemini</h3>
+                        <span class="model-badge expressive">gemini-3.1-flash-tts-preview</span>
+                    </div>
+                    <div class="model-controls">
+                        <button id="gemini-play-btn" class="play-btn" disabled>
+                            Play Audio
+                        </button>
+                        <div class="model-stats" id="gemini-stats">
+                            <span class="stat-item">Time to First Real Audio: <span class="stat-value">--</span></span>
+                            <span class="stat-item">Time to First Byte: <span class="stat-value">--</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-container">
+                    <div class="timeline" id="gemini-timeline">
+                        <div class="timeline-bar">
+                            <div class="timeline-segment processing" style="width: 0%"></div>
+                            <div class="timeline-segment silent-prefix" style="width: 0%"></div>
+                            <div class="timeline-segment speech" style="width: 0%"></div>
+                            <div class="timeline-segment vad-silence" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Inworld Max Model Section -->
             <div class="model-section hidden" id="inworldmax-section" data-model="inworldmax">
                 <div class="model-header">

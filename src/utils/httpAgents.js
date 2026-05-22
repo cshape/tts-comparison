@@ -11,7 +11,8 @@ const agents = {
     inworld: null,
     cartesia: null,
     elevenlabs: null,
-    hume: null
+    hume: null,
+    gemini: null
 };
 
 /**
@@ -48,6 +49,7 @@ export function getInworldAgent() { return getAgent('inworld'); }
 export function getCartesiaAgent() { return getAgent('cartesia'); }
 export function getElevenLabsAgent() { return getAgent('elevenlabs'); }
 export function getHumeAgent() { return getAgent('hume'); }
+export function getGeminiAgent() { return getAgent('gemini'); }
 
 /**
  * Warm up a provider's connection by making a minimal request
@@ -117,6 +119,21 @@ async function warmupProvider(provider) {
                 };
                 break;
 
+            case 'gemini':
+                if (!process.env.GEMINI_API_KEY ||
+                    process.env.GEMINI_API_KEY === 'your_gemini_api_key_here' ||
+                    process.env.GEMINI_API_KEY.trim() === '') {
+                    return { success: false, error: 'No valid API key configured' };
+                }
+                // Establish TCP+TLS to the Gemini API host. The endpoint returns 404 for an unknown
+                // model path, but the connection (and DNS/TLS handshake) is what we want cached.
+                config = {
+                    method: 'get',
+                    url: 'https://generativelanguage.googleapis.com/v1beta/models',
+                    headers: { 'x-goog-api-key': process.env.GEMINI_API_KEY }
+                };
+                break;
+
             default:
                 return { success: false, error: `Unknown provider: ${provider}` };
         }
@@ -144,6 +161,7 @@ export async function warmupInworldConnection() { return warmupProvider('inworld
 export async function warmupCartesiaConnection() { return warmupProvider('cartesia'); }
 export async function warmupElevenLabsConnection() { return warmupProvider('elevenlabs'); }
 export async function warmupHumeConnection() { return warmupProvider('hume'); }
+export async function warmupGeminiConnection() { return warmupProvider('gemini'); }
 
 /**
  * Warm up all provider connections in parallel
@@ -155,7 +173,8 @@ export async function warmupAllConnections() {
         warmupProvider('inworld'),
         warmupProvider('cartesia'),
         warmupProvider('elevenlabs'),
-        warmupProvider('hume')
+        warmupProvider('hume'),
+        warmupProvider('gemini')
     ]);
     const totalTimeMs = Date.now() - startTime;
     console.log(`[HttpAgents] All connections warmed up in ${totalTimeMs}ms`);
