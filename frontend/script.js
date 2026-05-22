@@ -1,13 +1,15 @@
 // Main TTS Application Script
 // COMMENTED OUT: ElevenLabs Turbo and Flash
-import { 
-    textInput, 
-    generateBtn, 
-    // elevenLabsPlayBtn, 
+import {
+    textInput,
+    generateBtn,
+    // elevenLabsPlayBtn,
     elevenLabsMultilingualPlayBtn,
     // elevenLabsFlashPlayBtn,
     inworldPlayBtn,
     inworldMaxPlayBtn,
+    inworldTts2PlayBtn,
+    geminiPlayBtn,
     humePlayBtn,
     cartesiaPlayBtn,
     models
@@ -73,6 +75,22 @@ inworldMaxPlayBtn.addEventListener('click', () => {
         resetPlayButtons();
     } else {
         playAudio('inworldmax', currentSessionId);
+    }
+});
+
+inworldTts2PlayBtn.addEventListener('click', () => {
+    if (inworldTts2PlayBtn.classList.contains('playing')) {
+        resetPlayButtons();
+    } else {
+        playAudio('inworldtts2', currentSessionId);
+    }
+});
+
+geminiPlayBtn.addEventListener('click', () => {
+    if (geminiPlayBtn.classList.contains('playing')) {
+        resetPlayButtons();
+    } else {
+        playAudio('gemini', currentSessionId);
     }
 });
 

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 // Import graph manager and audio manager for serving audio files
 import { graphManager } from '../managers/graphManager.js';
 import AudioManager from '../managers/audioManager.js';
-import { warmupAllConnections, warmupInworldConnection, warmupCartesiaConnection, warmupElevenLabsConnection, warmupHumeConnection } from '../utils/httpAgents.js';
+import { warmupAllConnections, warmupInworldConnection, warmupCartesiaConnection, warmupElevenLabsConnection, warmupHumeConnection, warmupGeminiConnection } from '../utils/httpAgents.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,7 +31,11 @@ router.get('/api/audio/:sessionId/:model', (req, res) => {
   
   const audioData = audioManager.getAudio(sessionId, model);
   if (audioData) {
-    res.setHeader('Content-Type', 'audio/mpeg');
+    // Sniff RIFF magic bytes so WAV-wrapped PCM (e.g. Gemini) is served with the right type.
+    const isWav = audioData.length >= 12 &&
+      audioData.slice(0, 4).toString('ascii') === 'RIFF' &&
+      audioData.slice(8, 12).toString('ascii') === 'WAVE';
+    res.setHeader('Content-Type', isWav ? 'audio/wav' : 'audio/mpeg');
     res.setHeader('Content-Length', audioData.length);
     res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader('Cache-Control', 'no-cache');
@@ -88,7 +92,7 @@ router.get('/api/audio/:sessionId/:model', (req, res) => {
     console.log(`[Routes] Sending start message to session ${sessionId}`);
     sessionManager.sendUpdate(sessionId, {
       type: 'start',
-      models: ['cartesia', 'elevenlabs-multilingual', 'hume', 'inworld', 'inworldmax'],
+      models: ['cartesia', 'elevenlabs-multilingual', 'hume', 'inworld', 'inworldmax', 'inworldtts2', 'gemini'],
       timestamp: Date.now()
     });
 
@@ -152,6 +156,11 @@ router.get('/api/audio/:sessionId/:model', (req, res) => {
 
   router.post('/api/warmup/hume', async (req, res) => {
     const result = await warmupHumeConnection();
+    res.json(result);
+  });
+
+  router.post('/api/warmup/gemini', async (req, res) => {
+    const result = await warmupGeminiConnection();
     res.json(result);
   });
 

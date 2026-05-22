@@ -1,6 +1,6 @@
 // Server-Sent Events (SSE) Management
 // COMMENTED OUT: ElevenLabs Turbo and Flash
-import { models, /* elevenLabsPlayBtn, */ elevenLabsMultilingualPlayBtn, /* elevenLabsFlashPlayBtn, */ inworldPlayBtn, inworldMaxPlayBtn, humePlayBtn, cartesiaPlayBtn } from './dom.js';
+import { models, /* elevenLabsPlayBtn, */ elevenLabsMultilingualPlayBtn, /* elevenLabsFlashPlayBtn, */ inworldPlayBtn, inworldMaxPlayBtn, inworldTts2PlayBtn, geminiPlayBtn, humePlayBtn, cartesiaPlayBtn } from './dom.js';
 import { updateStatus } from './utils.js';
 import { resetTimelines, calculateTimelinePercentages, markModelCompletedWithVAD, hideLoading } from './timeline.js';
 
@@ -97,11 +97,13 @@ export function handleSSEUpdate(data) {
                 // Enable play button if audio is available
                 if (data.hasAudio) {
                     // COMMENTED OUT: ElevenLabs Turbo and Flash
-                    const playBtn = // data.model === 'elevenlabs' ? elevenLabsPlayBtn : 
+                    const playBtn = // data.model === 'elevenlabs' ? elevenLabsPlayBtn :
                                     data.model === 'elevenlabs-multilingual' ? elevenLabsMultilingualPlayBtn :
                                     // data.model === 'elevenlabs-flash' ? elevenLabsFlashPlayBtn :
-                                    data.model === 'inworld' ? inworldPlayBtn : 
-                                    data.model === 'inworldmax' ? inworldMaxPlayBtn : 
+                                    data.model === 'inworld' ? inworldPlayBtn :
+                                    data.model === 'inworldmax' ? inworldMaxPlayBtn :
+                                    data.model === 'inworldtts2' ? inworldTts2PlayBtn :
+                                    data.model === 'gemini' ? geminiPlayBtn :
                                     data.model === 'hume' ? humePlayBtn : cartesiaPlayBtn;
                     playBtn.disabled = false;
                 }
@@ -299,7 +301,9 @@ function getModelKeyFromProvider(providerName) {
         'ElevenLabs Multilingual': 'elevenlabs-multilingual',
         'Hume': 'hume',
         'Inworld': 'inworld',
-        'Inworld Max': 'inworldmax'
+        'Inworld Max': 'inworldmax',
+        'Inworld TTS-2': 'inworldtts2',
+        'Gemini': 'gemini'
     };
     return providerMap[providerName] || providerName.toLowerCase();
 }
@@ -313,6 +317,8 @@ function getPlayButtonForModel(modelKey) {
         // case 'elevenlabs-flash': return elevenLabsFlashPlayBtn;
         case 'inworld': return inworldPlayBtn;
         case 'inworldmax': return inworldMaxPlayBtn;
+        case 'inworldtts2': return inworldTts2PlayBtn;
+        case 'gemini': return geminiPlayBtn;
         case 'hume': return humePlayBtn;
         case 'cartesia': return cartesiaPlayBtn;
         default: return null;

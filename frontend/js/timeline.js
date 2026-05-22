@@ -1,6 +1,6 @@
 // Timeline Management
 // COMMENTED OUT: ElevenLabs Turbo
-import { models, loadingSection, /* elevenLabsPlayBtn, */ inworldPlayBtn, inworldMaxPlayBtn, humePlayBtn } from './dom.js';
+import { models, loadingSection, /* elevenLabsPlayBtn, */ inworldPlayBtn, inworldMaxPlayBtn, inworldTts2PlayBtn, geminiPlayBtn, humePlayBtn } from './dom.js';
 import { resetPlayButtons } from './audio.js';
 import { setSegmentDuration } from './tooltip.js';
 
@@ -140,6 +140,8 @@ export function resetTimelines() {
     // elevenLabsPlayBtn.disabled = true;
     inworldPlayBtn.disabled = true;
     inworldMaxPlayBtn.disabled = true;
+    inworldTts2PlayBtn.disabled = true;
+    geminiPlayBtn.disabled = true;
     humePlayBtn.disabled = true;
     
     // Hide models but don't show loading on initial reset

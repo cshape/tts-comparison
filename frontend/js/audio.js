@@ -1,7 +1,7 @@
 // Audio Management
 // COMMENTED OUT: ElevenLabs Turbo and Flash
 // import { elevenLabsPlayBtn, elevenLabsMultilingualPlayBtn, elevenLabsFlashPlayBtn, inworldPlayBtn, inworldMaxPlayBtn, humePlayBtn, cartesiaPlayBtn } from './dom.js';
-import { elevenLabsMultilingualPlayBtn, inworldPlayBtn, inworldMaxPlayBtn, humePlayBtn, cartesiaPlayBtn } from './dom.js';
+import { elevenLabsMultilingualPlayBtn, inworldPlayBtn, inworldMaxPlayBtn, inworldTts2PlayBtn, geminiPlayBtn, humePlayBtn, cartesiaPlayBtn } from './dom.js';
 import { updateStatus } from './utils.js';
 
 // Audio management state
@@ -36,11 +36,13 @@ export async function playAudio(model, currentSessionId) {
     }
     
     // COMMENTED OUT: ElevenLabs Turbo and Flash
-    const playBtn = // model === 'elevenlabs' ? elevenLabsPlayBtn : 
+    const playBtn = // model === 'elevenlabs' ? elevenLabsPlayBtn :
                     model === 'elevenlabs-multilingual' ? elevenLabsMultilingualPlayBtn :
                     // model === 'elevenlabs-flash' ? elevenLabsFlashPlayBtn :
-                    model === 'inworld' ? inworldPlayBtn : 
+                    model === 'inworld' ? inworldPlayBtn :
                     model === 'inworldmax' ? inworldMaxPlayBtn :
+                    model === 'inworldtts2' ? inworldTts2PlayBtn :
+                    model === 'gemini' ? geminiPlayBtn :
                     model === 'hume' ? humePlayBtn : cartesiaPlayBtn;
     const audioKey = `${currentSessionId}_${model}`;
     
@@ -126,7 +128,7 @@ export async function playAudio(model, currentSessionId) {
 
 export function resetPlayButtons() {
     // COMMENTED OUT: ElevenLabs Turbo and Flash
-    [/* elevenLabsPlayBtn, */ elevenLabsMultilingualPlayBtn, /* elevenLabsFlashPlayBtn, */ inworldPlayBtn, inworldMaxPlayBtn, humePlayBtn, cartesiaPlayBtn].forEach((btn, index) => {
+    [/* elevenLabsPlayBtn, */ elevenLabsMultilingualPlayBtn, /* elevenLabsFlashPlayBtn, */ inworldPlayBtn, inworldMaxPlayBtn, inworldTts2PlayBtn, geminiPlayBtn, humePlayBtn, cartesiaPlayBtn].forEach((btn, index) => {
         btn.classList.remove('playing');
         btn.textContent = 'Play Audio';
     });

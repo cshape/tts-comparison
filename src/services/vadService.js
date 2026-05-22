@@ -213,8 +213,11 @@ class VadService extends EventEmitter {
      */
     async analyzeCompleteAudioFile(sessionId, model, audioManager = null) {
         const audioDir = path.dirname(this.config.modelPath).replace('/models', '/audio');
-        const audioFilePath = path.join(audioDir, `${sessionId}_${model}_complete.mp3`);
-        
+        const ext = audioManager?.getExtensionForModel
+            ? audioManager.getExtensionForModel(model)
+            : 'mp3';
+        const audioFilePath = path.join(audioDir, `${sessionId}_${model}_complete.${ext}`);
+
         console.log(`VAD Service: Analyzing complete audio file: ${audioFilePath}`);
         return this.analyzeAudioFile(audioFilePath, sessionId, model, audioManager);
     }

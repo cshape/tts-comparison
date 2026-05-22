@@ -11,7 +11,8 @@ Compares TTS models by visualizing their streaming performance, measuring first 
 - Cartesia Sonic-2
 - ElevenLabs Multilingual
 - Hume
-- Inworld (Standard, Max)
+- Inworld (Standard, Max, TTS-2)
+- Gemini (gemini-3.1-flash-tts-preview)
 
 ## Setup
 
