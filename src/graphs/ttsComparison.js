@@ -163,7 +163,7 @@ class BaseTTSProviderNode extends CustomNode {
 // Specific TTS Provider Nodes that reuse existing services
 class CartesiaTTSNode extends BaseTTSProviderNode {
   constructor(config, sharedAudioManager, sessionManager) {
-    super(config, 'Cartesia', CartesiaService, 'sonic-english', sharedAudioManager, sessionManager);
+    super(config, 'Cartesia', CartesiaService, 'sonic-3.5', sharedAudioManager, sessionManager);
   }
 
   getVoiceUsed() {
@@ -193,7 +193,7 @@ class ElevenLabsFlashTTSNode extends BaseTTSProviderNode {
 
 class ElevenLabsMultilingualTTSNode extends BaseTTSProviderNode {
   constructor(config, sharedAudioManager, sessionManager) {
-    super(config, 'ElevenLabs Multilingual', ElevenLabsMultilingualService, 'eleven_multilingual_v2', sharedAudioManager, sessionManager);
+    super(config, 'ElevenLabs Multilingual', ElevenLabsMultilingualService, 'eleven_v3', sharedAudioManager, sessionManager);
   }
 
   getVoiceUsed() {

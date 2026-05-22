@@ -102,7 +102,7 @@ class ElevenLabsMultilingualService {
             url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream/with-timestamps`,
             data: {
                 text: text,
-                model_id: 'eleven_multilingual_v2',
+                model_id: 'eleven_v3',
                 voice_settings: {
                     stability: 0.5,
                     similarity_boost: 0.75
@@ -113,8 +113,8 @@ class ElevenLabsMultilingualService {
                 'Content-Type': 'application/json'
             },
             params: {
-                output_format: 'mp3_44100_128',
-                optimize_streaming_latency: 3
+                output_format: 'mp3_44100_128'
+                // Note: optimize_streaming_latency is not supported on eleven_v3
             },
             httpsAgent: getElevenLabsAgent(),
             responseType: 'stream',
