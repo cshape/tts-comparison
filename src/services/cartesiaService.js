@@ -94,7 +94,7 @@ class CartesiaService {
             method: 'post',
             url: 'https://api.cartesia.ai/tts/sse',
             data: {
-                model_id: 'sonic-2',
+                model_id: 'sonic-3.5',
                 transcript: text,
                 voice: {
                     mode: 'id',
