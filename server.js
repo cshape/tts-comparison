@@ -9,6 +9,7 @@ import SessionManager from './src/managers/sessionManager.js';
 import { graphManager } from './src/managers/graphManager.js';
 import createTTSRoutes from './src/routes/ttsRoutes.js';
 import { destroyAllAgents } from './src/utils/httpAgents.js';
+import { loginGate, handleLoginPost, serveLoginPage } from './src/utils/loginGate.js';
 
 // Create session manager instance
 const sessionManager = new SessionManager();
@@ -24,6 +25,14 @@ const port = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Login routes (unauthenticated — must be mounted before the gate)
+app.get('/login', serveLoginPage);
+app.post('/api/login', handleLoginPost);
+
+// Everything below requires auth (no-op when LOGIN_PASSWORD is unset)
+app.use(loginGate);
+
 app.use(express.static('frontend'));
 
 // Setup routes

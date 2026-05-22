@@ -86,7 +86,7 @@ async function warmupProvider(provider) {
                 config = {
                     method: 'post',
                     url: 'https://api.cartesia.ai/tts/sse',
-                    data: { model_id: 'sonic-2', transcript: '', voice: { mode: 'id', id: 'a0e99841-438c-4a64-b679-ae501e7d6091' }, output_format: { container: 'raw', encoding: 'pcm_f32le', sample_rate: 44100 } },
+                    data: { model_id: 'sonic-3.5', transcript: '', voice: { mode: 'id', id: 'a0e99841-438c-4a64-b679-ae501e7d6091' }, output_format: { container: 'raw', encoding: 'pcm_f32le', sample_rate: 44100 } },
                     headers: { 'Cartesia-Version': '2024-06-10', 'X-API-Key': process.env.CARTESIA_API_KEY, 'Content-Type': 'application/json' }
                 };
                 break;

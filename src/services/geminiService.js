@@ -1,12 +1,16 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Modality } from '@google/genai';
 
 /**
- * Gemini TTS Service
- * Uses Google's Gemini speech-generation API (model: gemini-3.1-flash-tts-preview).
+ * Gemini TTS Service (Live API)
  *
- * The Gemini TTS API returns 24kHz, 16-bit signed PCM (mono) inline as base64.
- * We wrap it with a 44-byte WAV header before storing so the browser and ffmpeg
- * can read it without extra transcoding.
+ * Uses the Gemini Live API (`gemini-3.1-flash-live-preview`) over WebSocket
+ * for low-latency streaming audio. The non-streaming `generateContent` /
+ * `streamGenerateContent` TTS path waits for the full waveform server-side
+ * (~3-4s); the Live API streams 24kHz/16-bit PCM chunks as they're produced.
+ *
+ * We assemble the chunks in-memory, wrap with a WAV header, and store the
+ * buffer for downstream playback / VAD analysis. Model id is overridable
+ * via GEMINI_LIVE_MODEL.
  */
 
 const SAMPLE_RATE = 24000;
@@ -23,8 +27,8 @@ function pcmToWav(pcmBuffer) {
     header.writeUInt32LE(36 + dataSize, 4);
     header.write('WAVE', 8);
     header.write('fmt ', 12);
-    header.writeUInt32LE(16, 16);              // Subchunk1Size (PCM)
-    header.writeUInt16LE(1, 20);               // AudioFormat (PCM = 1)
+    header.writeUInt32LE(16, 16);
+    header.writeUInt16LE(1, 20);
     header.writeUInt16LE(CHANNELS, 22);
     header.writeUInt32LE(SAMPLE_RATE, 24);
     header.writeUInt32LE(byteRate, 28);
@@ -34,6 +38,12 @@ function pcmToWav(pcmBuffer) {
     header.writeUInt32LE(dataSize, 40);
 
     return Buffer.concat([header, pcmBuffer]);
+}
+
+function deferred() {
+    let resolve, reject;
+    const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
+    return { promise, resolve, reject };
 }
 
 class GeminiService {
@@ -65,7 +75,7 @@ class GeminiService {
                 timestamp: startTime
             });
 
-            console.log(' Gemini: Using real API');
+            console.log(' Gemini: Using Live API');
             const result = await this.processReal(text, sendUpdate, sessionId);
 
             sendUpdate({
@@ -98,64 +108,81 @@ class GeminiService {
 
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
         const voiceName = process.env.GEMINI_VOICE_ID || 'Charon';
-        const modelId = 'gemini-3.1-flash-tts-preview';
-
-        const config = {
-            responseModalities: ['AUDIO'],
-            speechConfig: {
-                voiceConfig: {
-                    prebuiltVoiceConfig: { voiceName }
-                }
-            }
-        };
-
-        const contents = [{ parts: [{ text }] }];
-
-        // Use streaming to capture time-to-first-byte
-        const stream = await ai.models.generateContentStream({
-            model: modelId,
-            contents,
-            config
-        });
+        const modelId = process.env.GEMINI_LIVE_MODEL || 'gemini-3.1-flash-live-preview';
 
         const pcmChunks = [];
         let totalAudioChunks = 0;
         let firstAudioChunkReceived = false;
 
-        for await (const chunk of stream) {
-            const parts = chunk?.candidates?.[0]?.content?.parts;
-            if (!parts) continue;
+        const turn = deferred();
 
-            for (const part of parts) {
-                const b64 = part?.inlineData?.data;
-                if (!b64) continue;
+        const session = await ai.live.connect({
+            model: modelId,
+            config: {
+                responseModalities: [Modality.AUDIO],
+                speechConfig: {
+                    voiceConfig: { prebuiltVoiceConfig: { voiceName } }
+                }
+            },
+            callbacks: {
+                onmessage: (msg) => {
+                    try {
+                        const parts = msg.serverContent?.modelTurn?.parts || [];
+                        for (const part of parts) {
+                            const b64 = part?.inlineData?.data;
+                            if (!b64) continue;
+                            const pcm = Buffer.from(b64, 'base64');
+                            pcmChunks.push(pcm);
+                            totalAudioChunks++;
 
-                const pcm = Buffer.from(b64, 'base64');
-                pcmChunks.push(pcm);
-                totalAudioChunks++;
+                            if (!firstAudioChunkReceived) {
+                                firstAudioChunkReceived = true;
+                                timeToFirstByte = Date.now() - requestStartTime;
+                                console.log(`Gemini: First chunk received after ${timeToFirstByte}ms - Size: ${pcm.length} bytes`);
 
-                if (!firstAudioChunkReceived) {
-                    firstAudioChunkReceived = true;
-                    timeToFirstByte = Date.now() - requestStartTime;
-                    console.log(`Gemini: First chunk received after ${timeToFirstByte}ms - Size: ${pcm.length} bytes`);
+                                sendUpdate({
+                                    type: 'model_update',
+                                    model: 'gemini',
+                                    stage: 'processing',
+                                    progress: 100,
+                                    timestamp: Date.now()
+                                });
+                                sendUpdate({
+                                    type: 'model_update',
+                                    model: 'gemini',
+                                    stage: 'speech',
+                                    progress: 0,
+                                    timestamp: Date.now()
+                                });
+                            }
+                        }
 
-                    sendUpdate({
-                        type: 'model_update',
-                        model: 'gemini',
-                        stage: 'processing',
-                        progress: 100,
-                        timestamp: Date.now()
-                    });
-
-                    sendUpdate({
-                        type: 'model_update',
-                        model: 'gemini',
-                        stage: 'speech',
-                        progress: 0,
-                        timestamp: Date.now()
-                    });
+                        if (msg.serverContent?.turnComplete || msg.serverContent?.generationComplete) {
+                            turn.resolve();
+                        }
+                    } catch (e) {
+                        turn.reject(e);
+                    }
+                },
+                onerror: (e) => {
+                    const errMsg = e?.message || e?.error?.message || 'Gemini Live API error';
+                    turn.reject(new Error(errMsg));
+                },
+                onclose: () => {
+                    turn.resolve();
                 }
             }
+        });
+
+        try {
+            session.sendClientContent({
+                turns: [{ role: 'user', parts: [{ text }] }],
+                turnComplete: true
+            });
+
+            await turn.promise;
+        } finally {
+            try { session.close(); } catch {}
         }
 
         const hasAudio = pcmChunks.length > 0;
@@ -164,8 +191,6 @@ class GeminiService {
         if (hasAudio) {
             const pcmBuffer = Buffer.concat(pcmChunks);
             const wavBuffer = pcmToWav(pcmBuffer);
-
-            // Duration in ms = samples / sample_rate * 1000
             const sampleCount = pcmBuffer.length / (BITS_PER_SAMPLE / 8) / CHANNELS;
             totalAudioDuration = Math.round((sampleCount / SAMPLE_RATE) * 1000);
 
@@ -173,7 +198,6 @@ class GeminiService {
             console.log(`Gemini: Total chunks: ${totalAudioChunks}, audio duration: ${totalAudioDuration}ms`);
             this.audioManager.saveCompleteAudio(sessionId, 'gemini', wavBuffer);
         } else if (timeToFirstByte === null) {
-            // No audio chunks ever arrived
             timeToFirstByte = Date.now() - requestStartTime;
         }
 
